@@ -1,0 +1,4 @@
+tasks:
+  - name: Build Library
+    init: cargo build
+image: gitpod/workspace-rust
