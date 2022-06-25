@@ -1,5 +1,5 @@
 use gateway::Gateway;
-use std::time::{Duration, self, SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 mod gateway;
 mod guild;
 pub use gateway::GatewayIntents;
@@ -31,7 +31,7 @@ impl Bot {
                 self.last_heartbeat_time = time;
                 self.gateway.send_heartbeat().await;
             }
-            
+
         }
     }
 }
