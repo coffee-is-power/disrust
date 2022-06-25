@@ -1,7 +1,8 @@
 use gateway::Gateway;
 use std::time::{SystemTime, UNIX_EPOCH};
 mod gateway;
-mod guild;
+pub mod guild;
+pub mod user;
 pub use gateway::GatewayIntents;
 pub struct Bot {
     token: &'static str,
