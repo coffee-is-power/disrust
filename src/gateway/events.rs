@@ -4,5 +4,17 @@ use serde::Deserialize;
 pub struct ReadyEvent {
     pub v: i32,
     pub session_id: String,
-    pub(crate) guilds: Option<Vec<crate::guild::UnavailableGuild>>,
+    pub guilds: Vec<crate::guild::UnavailableGuild>,
+}
+impl Clone for ReadyEvent {
+    fn clone_from(&mut self, source: &Self)
+    {
+        self.v = self.v.clone();
+        self.session_id = self.session_id.clone();
+        self.guilds = self.guilds.clone();
+    }
+
+    fn clone(&self) -> Self {
+        Self { v: self.v.clone(), session_id: self.session_id.clone(), guilds: self.guilds.clone() }
+    }
 }
