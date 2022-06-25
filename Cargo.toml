@@ -5,3 +5,7 @@ edition = "2021"
 
 [dependencies]
 reqwest = "0.11.*"
+websockets = "*"
+serde_json = "*"
+serde = {version = "*", features = ["derive"]}
+tokio = { version = "*", features = ["full"] }
