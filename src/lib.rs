@@ -1,12 +1,13 @@
 use gateway::Gateway;
-use std::time::Duration;
+use std::time::{Duration, self, SystemTime, UNIX_EPOCH};
 mod gateway;
 mod guild;
 pub use gateway::GatewayIntents;
 pub struct Bot {
     token: &'static str,
     gateway: Gateway,
-    intents: i32
+    intents: i32,
+    last_heartbeat_time: u128
 }
 impl Bot {
     pub async fn new(token: &'static str, intents: i32) -> Self {
@@ -14,6 +15,7 @@ impl Bot {
             token,
             gateway: Gateway::connect().await,
             intents,
+            last_heartbeat_time: 0
         }
     }
     pub async fn login(&mut self) {
@@ -22,11 +24,14 @@ impl Bot {
             self.gateway.socket.receive().await.unwrap();
         }
         loop {
-            tokio::time::sleep(Duration::from_millis(
-                (self.gateway.heartbeat_interval/4) as u64,
-            ))
-            .await;
-            self.gateway.send_heartbeat().await;
+            let time = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("Time went backwards").as_millis();
+            if time - self.last_heartbeat_time > (self.gateway.heartbeat_interval/2) as u128 {
+                self.last_heartbeat_time = time;
+                self.gateway.send_heartbeat().await;
+            }
+            
         }
     }
 }
