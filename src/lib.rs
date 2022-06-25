@@ -7,7 +7,7 @@ pub struct Bot {
     token: &'static str,
     gateway: Gateway,
     intents: i32,
-    last_heartbeat_time: u128
+    last_heartbeat_time: u128,
 }
 impl Bot {
     pub async fn new(token: &'static str, intents: i32) -> Self {
@@ -15,7 +15,7 @@ impl Bot {
             token,
             gateway: Gateway::connect().await,
             intents,
-            last_heartbeat_time: 0
+            last_heartbeat_time: 0,
         }
     }
     pub async fn login(&mut self) {
@@ -26,12 +26,12 @@ impl Bot {
         loop {
             let time = SystemTime::now()
                 .duration_since(UNIX_EPOCH)
-                .expect("Time went backwards").as_millis();
-            if time - self.last_heartbeat_time > (self.gateway.heartbeat_interval/2) as u128 {
+                .expect("Time went backwards")
+                .as_millis();
+            if time - self.last_heartbeat_time > (self.gateway.heartbeat_interval / 2) as u128 {
                 self.last_heartbeat_time = time;
                 self.gateway.send_heartbeat().await;
             }
-
         }
     }
 }
