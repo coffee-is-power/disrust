@@ -1,13 +1,13 @@
 use std::hash::Hash;
 
 use crate::user::User;
-
+#[derive(Debug)]
 pub enum Event {
     Ready {
-        api_version: u128,
+        api_version: u64,
         session_id: String,
-        application_id: u128,
-        guild_ids: Vec<u128>,
+        application_id: u64,
+        guild_ids: Vec<u64>,
         bot_user: User,
     },
     HeartBeatAcknowledge,
@@ -16,10 +16,7 @@ pub enum Event {
 #[derive(Debug)]
 pub enum Command {
     HeartBeat,
-    Identity {
-        token: String,
-        intents: Vec<Intent>,
-    },
+    Identity { token: String, intents: Vec<Intent> },
 }
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[allow(unused)]

@@ -1,12 +1,13 @@
+use serde::Deserialize;
+
+#[derive(Deserialize, Debug)]
 pub struct User {
-    pub(crate) id: u128,
+    pub(crate) id: String,
     pub(crate) username: String,
-    pub(crate) discriminator: u16,
-    pub(crate) avatar_hash: String,
+    pub(crate) discriminator: String,
+    pub(crate) avatar: String,
     pub(crate) bot: bool,
-    pub(crate) system: bool,
-    pub(crate) has_2fa: bool,
-    pub(crate) banner_hash: Option<String>,
+    pub(crate) banner: Option<String>,
     pub(crate) accent_color: Option<u32>,
     pub(crate) locale: Option<String>,
     pub(crate) verified: bool,
@@ -27,14 +28,12 @@ macro_rules! getter {
     };
 }
 impl User {
-    getter!(id -> u128);
+    getter!(id -> String);
     getter!(username -> String);
-    getter!(discriminator -> u16);
-    getter!(avatar_hash -> String);
+    getter!(discriminator -> String);
+    getter!(avatar -> String);
     getter!(is_bot -> bot -> bool);
-    getter!(is_system_bot -> system -> bool);
-    getter!(has_2fa -> bool);
-    getter!(banner_hash -> Option<String>);
+    getter!(banner -> Option<String>);
     getter!(accent_color -> Option<u32>);
     getter!(locale -> Option<String>);
     getter!(is_verified -> verified -> bool);
@@ -42,7 +41,7 @@ impl User {
     getter!(flags -> Option<u32>);
     getter!(premium_type -> Option<PremiumType>);
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Deserialize, Debug)]
 pub enum PremiumType {
     None,
     NitroClassic,

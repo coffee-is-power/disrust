@@ -7,7 +7,10 @@ use serde_json::{Map, Number, Value};
 use std::{env::consts::OS, sync::Arc, time::Duration};
 use tokio::{
     net::TcpStream,
-    sync::{mpsc::channel, Mutex},
+    sync::{
+        mpsc::{channel, Sender},
+        Mutex,
+    },
 };
 use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
 
@@ -19,7 +22,6 @@ const DISCORD_WEBSOCKET_URL: &str =
 
 pub struct Gateway {
     socket: WebSocketStream<MaybeTlsStream<TcpStream>>,
-    event_queue: Vec<Event>,
     command_queue: Vec<Command>,
     heartbeat_interval: u32,
 }
@@ -34,12 +36,12 @@ impl Gateway {
         Self {
             socket: socket,
             command_queue: vec![],
-            event_queue: vec![],
             heartbeat_interval: hello["d"]["heartbeat_interval"].as_u64().unwrap() as u32,
         }
     }
 
     pub async fn start_event_loop(mut self) {
+        let (event_sender, mut event_receiver) = channel::<Event>(5);
         let (sender, mut receiver) = channel::<Command>(5);
         let sender2 = sender.clone();
         let heartbeat_interval = self.heartbeat_interval;
@@ -66,10 +68,12 @@ impl Gateway {
                     .map(|x| x.into_text().ok())
                     .flatten();
                 if let Some(packet) = next {
-                    let seq = serde_json::from_str::<Map<_, _>>(&packet).unwrap()["s"].as_u64();
+                    let packet = serde_json::from_str::<Map<_, _>>(&packet).unwrap();
+                    let seq = packet["s"].as_u64();
                     if let Some(seq) = seq {
                         *s_mutex2.lock().await = seq;
                     }
+                    Self::handle_packet(event_sender.clone(), packet).await;
                 }
             }
         });
@@ -83,7 +87,6 @@ impl Gateway {
                         let mut packet = serde_json::Map::<_, _>::new();
                         packet.insert("op".to_owned(), Value::Number(Number::from(1u32)));
                         let s = s_mutex.lock().await;
-                        println!("{}", *s);
                         packet.insert("d".to_owned(), Value::Number(Number::from(*s)));
                         writer
                             .send(Message::Text(serde_json::to_string(&packet).unwrap()))
@@ -122,6 +125,52 @@ impl Gateway {
                     }
                 }
             }
+            while let Ok(event) = event_receiver.try_recv() {
+                match event {
+                    Event::Ready {
+                        api_version,
+                        ref session_id,
+                        application_id,
+                        ref guild_ids,
+                        ref bot_user,
+                    } => {
+                        println!("Bot's ready: {:#?}", event);
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    async fn handle_packet(sender: Sender<Event>, packet: Map<String, Value>) {
+        match &packet["t"] {
+            Value::String(typ) => match typ.as_str() {
+                "READY" => {
+                    println!("The bot is ready!");
+                    sender
+                        .send(Event::Ready {
+                            api_version: packet["d"]["v"].as_u64().unwrap(),
+                            application_id: packet["d"]["application"]["id"]
+                                .as_str()
+                                .unwrap()
+                                .parse()
+                                .unwrap(),
+                            guild_ids: packet["d"]["guilds"]
+                                .as_array()
+                                .unwrap()
+                                .iter()
+                                .map(|v| v["id"].as_str().unwrap().parse().unwrap())
+                                .collect(),
+                            session_id: packet["d"]["session_id"].as_str().unwrap().to_owned(),
+                            bot_user: serde_json::from_value(packet["d"]["user"].clone()).unwrap(),
+                        })
+                        .await
+                        .unwrap();
+                }
+                "GUILD_CREATE" => {}
+                _ => todo!("Event {} not implemented yet!", typ),
+            },
+            Value::Null => {}
+            _ => println!("Received strange event type from websocket: {:#?}", packet),
         }
     }
     pub fn authenticate(&mut self, token: &str, intents: Vec<Intent>) {

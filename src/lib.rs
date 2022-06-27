@@ -1,4 +1,3 @@
-
 use gateway::Gateway;
 pub use gateway::Intent;
 mod gateway;
