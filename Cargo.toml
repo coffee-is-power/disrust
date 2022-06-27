@@ -4,8 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# This is for communicating with the discord rest api
 reqwest = "0.11.*"
-tungstenite = {version = "*", features = ["native-tls"]}
+# This is for connecting to the discord gateway
+# Discord will send events through the gateway
+tokio-tungstenite = {version = "*", features = ["native-tls"]}
+futures-util = "*"
 serde_json = "*"
 serde = {version = "*", features = ["derive"]}
-fragile = "*"
+tokio = { version = "*", features = ["full"] }
+# Allow formatting in const variables
+const_format = "*"
