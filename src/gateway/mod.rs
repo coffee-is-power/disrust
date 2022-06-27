@@ -4,7 +4,7 @@ use const_format::formatcp;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use reqwest::Url;
 use serde_json::{Map, Number, Value};
-use std::{collections::HashSet, env::consts::OS, sync::Arc, time::Duration};
+use std::{env::consts::OS, sync::Arc, time::Duration};
 use tokio::{
     net::TcpStream,
     sync::{mpsc::channel, Mutex},
@@ -124,11 +124,8 @@ impl Gateway {
             }
         }
     }
-    pub fn queue_command(&mut self, cmd: Command) {
-        self.command_queue.push(cmd);
-    }
-    pub fn authenticate(&mut self, token: &str, intents: HashSet<Intent>) {
-        self.queue_command(Command::Identity {
+    pub fn authenticate(&mut self, token: &str, intents: Vec<Intent>) {
+        self.command_queue.push(Command::Identity {
             token: token.to_string(),
             intents,
         })

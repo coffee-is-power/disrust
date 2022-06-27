@@ -1,4 +1,4 @@
-use std::{collections::HashSet, hash::Hash};
+use std::hash::Hash;
 
 use crate::user::User;
 
@@ -18,7 +18,7 @@ pub enum Command {
     HeartBeat,
     Identity {
         token: String,
-        intents: HashSet<Intent>,
+        intents: Vec<Intent>,
     },
 }
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

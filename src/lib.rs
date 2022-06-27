@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 
 use gateway::Gateway;
 pub use gateway::Intent;
@@ -6,10 +5,10 @@ mod gateway;
 mod user;
 pub struct Bot {
     gateway: Gateway,
-    intents: HashSet<Intent>,
+    intents: Vec<Intent>,
 }
 impl Bot {
-    pub async fn new(intents: HashSet<Intent>) -> Self {
+    pub async fn new(intents: Vec<Intent>) -> Self {
         Self {
             gateway: Gateway::connect().await,
             intents,
