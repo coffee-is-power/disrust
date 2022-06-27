@@ -1,5 +1,5 @@
 mod events;
-use self::events::{Command, Event};
+pub use self::events::{Command, Event};
 use const_format::formatcp;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use reqwest::Url;
@@ -40,7 +40,7 @@ impl Gateway {
         }
     }
 
-    pub async fn start_event_loop(mut self) {
+    pub async fn start_event_loop(mut self, event_handler: fn(Event)) {
         let (event_sender, mut event_receiver) = channel::<Event>(5);
         let (sender, mut receiver) = channel::<Command>(5);
         let sender2 = sender.clone();
@@ -134,7 +134,7 @@ impl Gateway {
                         ref guild_ids,
                         ref bot_user,
                     } => {
-                        println!("Bot's ready: {:#?}", event);
+                        
                     }
                     _ => {}
                 }
