@@ -5,7 +5,7 @@ use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use reqwest::Url;
 use serde_json::{Map, Number, Value};
 use std::{collections::HashSet, env::consts::OS, time::Duration, sync::Arc};
-use tokio::{io::split, net::TcpStream, sync::{mpsc::channel, Mutex}};
+use tokio::{net::TcpStream, sync::{mpsc::channel, Mutex}};
 use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
 
 pub use events::Intent;
@@ -48,7 +48,7 @@ impl Gateway {
         let (sender, mut receiver) = channel::<Command>(5);
         let sender2 = sender.clone();
         let heartbeat_interval = self.heartbeat_interval;
-        let mut s_mutex = Arc::from(Mutex::new(0));
+        let s_mutex = Arc::from(Mutex::new(0));
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(Duration::from_millis(heartbeat_interval.into()));
             loop {
@@ -60,7 +60,7 @@ impl Gateway {
             }
         });
 
-        let mut s_mutex2 = s_mutex.clone();
+        let s_mutex2 = s_mutex.clone();
         let (mut  writer, mut reader) = self.socket.split();
 
         tokio::spawn(async move {
@@ -81,11 +81,8 @@ impl Gateway {
             }
         });
         loop {
-            match receiver.try_recv() {
-                Ok(cmd) => {
-                    self.command_queue.push(cmd);
-                }
-                Err(e) => {}
+            if let Ok(cmd) = receiver.try_recv() {
+                self.command_queue.push(cmd);
             }
             while let Some(cmd) = self.command_queue.pop() {
                 match cmd {

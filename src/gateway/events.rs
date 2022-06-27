@@ -3,9 +3,6 @@ use std::{collections::HashSet, hash::Hash};
 use crate::user::User;
 
 pub enum Event {
-    Hello {
-        heartbeat_interval: u32
-    },
     Ready {
         api_version: u128,
         session_id: String,
