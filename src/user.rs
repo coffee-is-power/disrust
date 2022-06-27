@@ -16,10 +16,14 @@ pub struct User {
 }
 macro_rules! getter {
     ($field:ident -> $typ:ty) => {
-        pub fn $field(&self) -> $typ { self.$field.clone() }
+        pub fn $field(&self) -> $typ {
+            self.$field.clone()
+        }
     };
     ($getter_name:ident -> $field:ident -> $typ:ty) => {
-        pub fn $getter_name(&self) -> $typ { self.$field.clone() }
+        pub fn $getter_name(&self) -> $typ {
+            self.$field.clone()
+        }
     };
 }
 impl User {
@@ -42,5 +46,5 @@ impl User {
 pub enum PremiumType {
     None,
     NitroClassic,
-    Nitro
+    Nitro,
 }

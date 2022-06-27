@@ -4,8 +4,11 @@ use const_format::formatcp;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use reqwest::Url;
 use serde_json::{Map, Number, Value};
-use std::{collections::HashSet, env::consts::OS, time::Duration, sync::Arc};
-use tokio::{net::TcpStream, sync::{mpsc::channel, Mutex}};
+use std::{collections::HashSet, env::consts::OS, sync::Arc, time::Duration};
+use tokio::{
+    net::TcpStream,
+    sync::{mpsc::channel, Mutex},
+};
 use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
 
 pub use events::Intent;
@@ -25,22 +28,14 @@ impl Gateway {
         let (mut socket, _) = connect_async(Url::parse(DISCORD_WEBSOCKET_URL).unwrap())
             .await
             .unwrap();
-        let hello_packet_text = socket
-            .next()
-            .await
-            .unwrap()
-            .unwrap()
-            .into_text()
-            .unwrap();
+        let hello_packet_text = socket.next().await.unwrap().unwrap().into_text().unwrap();
         let hello = serde_json::from_str::<serde_json::Map<_, _>>(&hello_packet_text).unwrap();
 
         Self {
             socket: socket,
             command_queue: vec![],
             event_queue: vec![],
-            heartbeat_interval: hello["d"]["heartbeat_interval"]
-                .as_u64()
-                .unwrap() as u32,
+            heartbeat_interval: hello["d"]["heartbeat_interval"].as_u64().unwrap() as u32,
         }
     }
 
@@ -50,18 +45,16 @@ impl Gateway {
         let heartbeat_interval = self.heartbeat_interval;
         let s_mutex = Arc::from(Mutex::new(0));
         tokio::spawn(async move {
-            let mut interval = tokio::time::interval(Duration::from_millis(heartbeat_interval.into()));
+            let mut interval =
+                tokio::time::interval(Duration::from_millis(heartbeat_interval.into()));
             loop {
                 interval.tick().await;
-                sender2
-                    .send(Command::HeartBeat)
-                    .await
-                    .unwrap();
+                sender2.send(Command::HeartBeat).await.unwrap();
             }
         });
 
         let s_mutex2 = s_mutex.clone();
-        let (mut  writer, mut reader) = self.socket.split();
+        let (mut writer, mut reader) = self.socket.split();
 
         tokio::spawn(async move {
             loop {

@@ -8,7 +8,7 @@ pub enum Event {
         session_id: String,
         application_id: u128,
         guild_ids: Vec<u128>,
-        bot_user: User
+        bot_user: User,
     },
     HeartBeatAcknowledge,
     InvalidSession,
@@ -18,7 +18,7 @@ pub enum Command {
     HeartBeat,
     Identity {
         token: String,
-        intents: HashSet<Intent>
+        intents: HashSet<Intent>,
     },
 }
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -50,7 +50,7 @@ impl Hash for Intent {
     }
 }
 impl Intent {
-    pub fn calculate_intent_bitfield(intents: Box<dyn Iterator<Item=Self>>) -> u32 {
+    pub fn calculate_intent_bitfield(intents: Box<dyn Iterator<Item = Self>>) -> u32 {
         let mut result = 0u32;
         for intent in intents {
             result |= intent.get_bit();
