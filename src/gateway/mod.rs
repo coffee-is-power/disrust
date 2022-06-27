@@ -126,18 +126,7 @@ impl Gateway {
                 }
             }
             while let Ok(event) = event_receiver.try_recv() {
-                match event {
-                    Event::Ready {
-                        api_version,
-                        ref session_id,
-                        application_id,
-                        ref guild_ids,
-                        ref bot_user,
-                    } => {
-                        
-                    }
-                    _ => {}
-                }
+                event_handler(event);
             }
         }
     }
@@ -145,7 +134,6 @@ impl Gateway {
         match &packet["t"] {
             Value::String(typ) => match typ.as_str() {
                 "READY" => {
-                    println!("The bot is ready!");
                     sender
                         .send(Event::Ready {
                             api_version: packet["d"]["v"].as_u64().unwrap(),

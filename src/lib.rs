@@ -1,4 +1,5 @@
-use gateway::{Gateway, Event};
+use gateway::Gateway;
+pub use gateway::Event;
 pub use gateway::Intent;
 mod gateway;
 mod user;
@@ -15,7 +16,7 @@ impl Bot {
             event_handler: None
         }
     }
-    pub async fn set_event_handler(&mut self, e: fn(Event)) {
+    pub fn set_event_handler(&mut self, e: fn(Event)) {
         self.event_handler = Some(e);
     }
     pub async fn login(mut self, token: &str) {
