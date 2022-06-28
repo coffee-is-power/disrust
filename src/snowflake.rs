@@ -13,6 +13,7 @@ impl Number for u128 {}
 impl Number for i128 {}
 /// A snowflake is an ID of an object in discord.
 /// Things like Guilds, Channels, Users, Members, all have IDs.
+#[derive(Clone)]
 pub struct Snowflake(String);
 impl Snowflake {
     pub fn from(id: String) -> Self {

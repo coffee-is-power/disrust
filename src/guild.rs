@@ -24,7 +24,40 @@ pub struct Guild {
     features: Vec<String>,
     mfa_level: bool
 }
+
+macro_rules! getter {
+    ($field:ident -> $typ:ty) => {
+        pub fn $field(&self) -> $typ {
+            self.$field.clone()
+        }
+    };
+    (&$field:ident -> $typ:ty) => {
+        pub fn $field<'a>(&'a self) -> &'a $typ {
+            &self.$field
+        }
+    }
+}
 impl Guild {
+
+    getter!(id -> Snowflake);
+    getter!(name -> String);
+    getter!(icon_url -> String);
+    getter!(splash_url -> Option<String>);
+    getter!(discovery_splash_url -> Option<String>);
+    getter!(owner_user_id -> String);
+    getter!(&afk_channel_id -> Option<Snowflake>);
+    getter!(afk_timeout -> Duration);
+    getter!(widget_enabled -> bool);
+    getter!(widget_channel_id -> Option<Snowflake>);
+    getter!(verification_level -> VerificationLevel);
+    getter!(default_message_notifications -> MessageNotificationLevel);
+    getter!(explicit_content_filter -> ContentFilterLevel);
+    getter!(&roles -> Vec<Role>);
+    getter!(&emojis -> Vec<Emoji>);
+    getter!(&features -> Vec<String>);
+    getter!(mfa_level -> bool);
+
+
     pub(crate) fn from_json(json: &Map<String, Value>) -> Self {
         Self {
             afk_channel_id: if let Some(afk_channel_id) = json["afk_channel_id"].as_str() {
@@ -70,7 +103,7 @@ impl Guild {
     }
 }
 
-#[derive(Debug, FromRepr)]
+#[derive(Debug, FromRepr, Clone, Copy)]
 #[repr(u64)]
 pub enum VerificationLevel {
     None,
@@ -79,13 +112,13 @@ pub enum VerificationLevel {
     High,
     VeryHigh
 }
-#[derive(Debug, FromRepr)]
+#[derive(Debug, FromRepr, Clone, Copy)]
 #[repr(u64)]
 pub enum MessageNotificationLevel {
     AllMessages,
     OnlyMentions
 }
-#[derive(Debug, FromRepr)]
+#[derive(Debug, FromRepr, Clone, Copy)]
 #[repr(u64)]
 pub enum ContentFilterLevel {
     None,
