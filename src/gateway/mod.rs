@@ -1,5 +1,5 @@
 mod events;
-use crate::Guild;
+use crate::{Bot, Guild};
 
 pub use self::events::{Command, Event};
 use const_format::formatcp;
@@ -42,7 +42,7 @@ impl Gateway {
         }
     }
 
-    pub async fn start_event_loop(mut self, event_handler: fn(Event)) {
+    pub async fn start_event_loop(mut self, bot: &mut Bot, event_handler: fn(Event)) -> ! {
         let (event_sender, mut event_receiver) = channel::<Event>(5);
         let (sender, mut receiver) = channel::<Command>(5);
         let sender2 = sender.clone();
@@ -156,9 +156,12 @@ impl Gateway {
                         .await
                         .unwrap();
                 }
-                "GUILD_CREATE" => {
-                    sender.send(Event::GuildCreate(Guild::from_json(packet["d"].as_object().unwrap()))).await.unwrap()
-                }
+                "GUILD_CREATE" => sender
+                    .send(Event::GuildCreate(Guild::from_json(
+                        packet["d"].as_object().unwrap(),
+                    )))
+                    .await
+                    .unwrap(),
                 _ => todo!("Event {} not implemented yet!", typ),
             },
             Value::Null => {}

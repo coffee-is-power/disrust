@@ -2,13 +2,15 @@ use disrust::{Bot, Event, Intent::*};
 
 #[tokio::main]
 async fn main() {
-    let mut bot = Bot::new(vec![Guild, GuildMessages]).await;
+    let mut bot = Bot::new();
     let token = option_env!("TOKEN");
-    bot.set_event_handler(|e| match e {
+    bot.login(token.unwrap(),vec![Guild, GuildMessages],|e| match e {
         Event::Ready { .. } => {
             println!("The Bot's ready!");
         }
+        Event::GuildCreate(guild) => {
+            println!("{:#?}", guild);
+        }
         _ => {}
-    });
-    bot.login(token.unwrap()).await;
+    }).await;
 }

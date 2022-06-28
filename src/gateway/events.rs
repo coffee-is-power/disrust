@@ -1,8 +1,10 @@
 use std::hash::Hash;
 
-use crate::{user::User, snowflake::Snowflake, Guild};
+use crate::{snowflake::Snowflake, user::User, Guild};
 #[derive(Debug)]
 pub enum Event {
+    /// This event is sent when the bot successfully logs in
+    /// It contains some information about the bot, and all the guilds (IDs) the bot is in
     Ready {
         api_version: u64,
         session_id: String,
@@ -10,6 +12,11 @@ pub enum Event {
         guild_ids: Vec<Snowflake>,
         bot_user: User,
     },
+    /// This event is sent when the bot joins a server
+    ///
+    /// It will also be sent after Ready to complete the Guild objects sent in the ready event
+    ///
+    /// See also: https://discord.com/developers/docs/topics/gateway#guilds
     GuildCreate(Guild),
     HeartBeatAcknowledge,
     InvalidSession,

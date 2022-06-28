@@ -1,14 +1,18 @@
-use std::{str::FromStr, fmt::{Debug, Display}, num::ParseIntError};
+use std::{
+    fmt::{Debug, Display},
+    num::ParseIntError,
+    str::FromStr,
+};
 
 pub trait Number {}
-impl Number for u8   {}
-impl Number for i8   {}
-impl Number for u16  {}
-impl Number for i16  {}
-impl Number for u32  {}
-impl Number for i32  {}
-impl Number for u64  {}
-impl Number for i64  {}
+impl Number for u8 {}
+impl Number for i8 {}
+impl Number for u16 {}
+impl Number for i16 {}
+impl Number for u32 {}
+impl Number for i32 {}
+impl Number for u64 {}
+impl Number for i64 {}
 impl Number for u128 {}
 impl Number for i128 {}
 /// A snowflake is an ID of an object in discord.
@@ -29,7 +33,7 @@ impl Snowflake {
     pub fn as_number<T>(&self) -> T
     where
         T: Number + FromStr,
-        <T as FromStr>::Err: Debug
+        <T as FromStr>::Err: Debug,
     {
         self.0.parse().unwrap()
     }
@@ -79,13 +83,16 @@ mod tests {
         assert_eq!(snowflake.as_number::<u128>(), 123456789123456789123456789)
     }
     #[test]
-    fn display_outputs_number(){
+    fn display_outputs_number() {
         let snowflake = Snowflake::from("123456789123456789123456789".to_string());
         assert_eq!(format!("{}", snowflake), "123456789123456789123456789");
     }
     #[test]
-    fn debug_shows_its_a_snowflake(){
+    fn debug_shows_its_a_snowflake() {
         let snowflake = Snowflake::from("123456789123456789123456789".to_string());
-        assert_eq!(format!("{:?}", snowflake), r#"Snowflake("123456789123456789123456789")"#);
+        assert_eq!(
+            format!("{:?}", snowflake),
+            r#"Snowflake("123456789123456789123456789")"#
+        );
     }
 }

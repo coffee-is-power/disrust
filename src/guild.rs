@@ -1,8 +1,8 @@
 use std::time::Duration;
 
+use crate::{emoji::Emoji, role::Role, snowflake::Snowflake};
 use serde_json::{Map, Value};
 use strum::FromRepr;
-use crate::{snowflake::Snowflake, role::Role, emoji::Emoji};
 
 #[derive(Debug)]
 pub struct Guild {
@@ -22,7 +22,7 @@ pub struct Guild {
     roles: Vec<Role>,
     emojis: Vec<Emoji>,
     features: Vec<String>,
-    mfa_level: bool
+    mfa_level: bool,
 }
 
 macro_rules! getter {
@@ -35,10 +35,9 @@ macro_rules! getter {
         pub fn $field<'a>(&'a self) -> &'a $typ {
             &self.$field
         }
-    }
+    };
 }
 impl Guild {
-
     getter!(id -> Snowflake);
     getter!(name -> String);
     getter!(icon_url -> String);
@@ -57,7 +56,6 @@ impl Guild {
     getter!(&features -> Vec<String>);
     getter!(mfa_level -> bool);
 
-
     pub(crate) fn from_json(json: &Map<String, Value>) -> Self {
         Self {
             afk_channel_id: if let Some(afk_channel_id) = json["afk_channel_id"].as_str() {
@@ -67,14 +65,26 @@ impl Guild {
             },
             id: json["id"].as_str().unwrap().parse().unwrap(),
             name: json["name"].as_str().unwrap().to_string(),
-            icon_url: format!("https://cdn.discordapp.com/icons/{guild_id}/{guild_icon}.png", guild_id = json["id"].as_str().unwrap(), guild_icon = json["icon"].as_str().unwrap()),
+            icon_url: format!(
+                "https://cdn.discordapp.com/icons/{guild_id}/{guild_icon}.png",
+                guild_id = json["id"].as_str().unwrap(),
+                guild_icon = json["icon"].as_str().unwrap()
+            ),
             splash_url: if let Some(splash) = json["splash"].as_str() {
-                Some(format!("https://cdn.discordapp.com/splashes/{guild_id}/{splash}.png", guild_id = json["id"].as_str().unwrap(), splash = splash))
+                Some(format!(
+                    "https://cdn.discordapp.com/splashes/{guild_id}/{splash}.png",
+                    guild_id = json["id"].as_str().unwrap(),
+                    splash = splash
+                ))
             } else {
                 None
             },
             discovery_splash_url: if let Some(splash) = json["discovery_splash"].as_str() {
-                Some(format!("https://cdn.discordapp.com/discovery-splashes/{guild_id}/{splash}.png", guild_id = json["id"].as_str().unwrap(), splash = splash))
+                Some(format!(
+                    "https://cdn.discordapp.com/discovery-splashes/{guild_id}/{splash}.png",
+                    guild_id = json["id"].as_str().unwrap(),
+                    splash = splash
+                ))
             } else {
                 None
             },
@@ -90,15 +100,41 @@ impl Guild {
             } else {
                 None
             },
-            verification_level: VerificationLevel::from_repr(json["verification_level"].as_u64().unwrap()).unwrap(),
-            default_message_notifications: MessageNotificationLevel::from_repr(json["default_message_notifications"].as_u64().unwrap()).unwrap(),
-            explicit_content_filter: ContentFilterLevel::from_repr(json["explicit_content_filter"].as_u64().unwrap()).unwrap(),
-            roles: json["roles"].as_array().unwrap().iter().map(|r| {
-                Role::from_json(&r.as_object().unwrap())
-            }).collect(),
-            emojis: json["emojis"].as_array().unwrap().iter().map(|e| Emoji::from_json(e.as_object().unwrap())).collect(),
-            features: json["features"].as_array().unwrap().iter().map(|f| f.as_str().unwrap().to_string()).collect(),
-            mfa_level: if json["mfa_level"].as_u64().unwrap() > 0 { true } else { false },
+            verification_level: VerificationLevel::from_repr(
+                json["verification_level"].as_u64().unwrap(),
+            )
+            .unwrap(),
+            default_message_notifications: MessageNotificationLevel::from_repr(
+                json["default_message_notifications"].as_u64().unwrap(),
+            )
+            .unwrap(),
+            explicit_content_filter: ContentFilterLevel::from_repr(
+                json["explicit_content_filter"].as_u64().unwrap(),
+            )
+            .unwrap(),
+            roles: json["roles"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|r| Role::from_json(&r.as_object().unwrap()))
+                .collect(),
+            emojis: json["emojis"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|e| Emoji::from_json(e.as_object().unwrap()))
+                .collect(),
+            features: json["features"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|f| f.as_str().unwrap().to_string())
+                .collect(),
+            mfa_level: if json["mfa_level"].as_u64().unwrap() > 0 {
+                true
+            } else {
+                false
+            },
         }
     }
 }
@@ -110,18 +146,18 @@ pub enum VerificationLevel {
     Low,
     Medium,
     High,
-    VeryHigh
+    VeryHigh,
 }
 #[derive(Debug, FromRepr, Clone, Copy)]
 #[repr(u64)]
 pub enum MessageNotificationLevel {
     AllMessages,
-    OnlyMentions
+    OnlyMentions,
 }
 #[derive(Debug, FromRepr, Clone, Copy)]
 #[repr(u64)]
 pub enum ContentFilterLevel {
     None,
     MembersWithoutRoles,
-    AllMembers
+    AllMembers,
 }
