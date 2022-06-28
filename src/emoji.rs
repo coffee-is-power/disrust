@@ -12,7 +12,25 @@ pub struct Emoji {
     animated: bool,
     available: bool
 }
+macro_rules! getter {
+    ($field:ident -> $typ:ty) => {
+        pub fn $field(&self) -> $typ {
+            self.$field.clone()
+        }
+    };
+    (&$field:ident -> $typ:ty) => {
+        pub fn $field<'a>(&'a self) -> &'a $typ {
+            &self.$field
+        }
+    }
+}
 impl Emoji {
+    getter!(id -> Option<Snowflake>);
+    getter!(name -> Option<String>);
+    getter!(&roles -> Vec<Role>);
+    getter!(creator -> Option<User>);
+    getter!(animated -> bool);
+    getter!(available -> bool);
     pub(crate) fn from_json(json: &Map<String, Value>) -> Self {
         Self {
             id: json["id"].as_str().map(|s| s.parse::<Snowflake>().unwrap()),
