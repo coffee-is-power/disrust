@@ -4,7 +4,7 @@ use disrust::{Bot, Event, Intent::*};
 async fn main() {
     let mut bot = Bot::new();
     let token = option_env!("TOKEN");
-    bot.login(token.unwrap(),vec![Guild, GuildMessages],|e| match e {
+    bot.login(token.unwrap(), vec![Guild, GuildMessages], |e| match e {
         Event::Ready { .. } => {
             println!("The Bot's ready!");
         }
@@ -12,5 +12,6 @@ async fn main() {
             println!("{:#?}", guild);
         }
         _ => {}
-    }).await;
+    })
+    .await;
 }

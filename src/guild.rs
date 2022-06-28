@@ -4,7 +4,7 @@ use crate::{emoji::Emoji, role::Role, snowflake::Snowflake};
 use serde_json::{Map, Value};
 use strum::FromRepr;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Guild {
     id: Snowflake,
     name: String,

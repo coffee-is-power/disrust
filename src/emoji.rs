@@ -2,7 +2,7 @@ use serde_json::{Map, Value};
 
 use crate::{role::Role, snowflake::Snowflake, user::User};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Emoji {
     /// If None, probably it's a builtin emoji, and name will be a unicode emoji
     id: Option<Snowflake>,

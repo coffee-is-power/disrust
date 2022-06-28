@@ -2,7 +2,7 @@ use serde_json::{Map, Value};
 
 use crate::{permissions::Permission, snowflake::Snowflake};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Color(u8, u8, u8);
 impl Color {
     pub fn from_hex(hex: u32) -> Self {
@@ -26,7 +26,7 @@ macro_rules! getter {
         }
     };
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Role {
     id: Snowflake,
     name: String,

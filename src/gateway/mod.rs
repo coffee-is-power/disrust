@@ -128,6 +128,26 @@ impl Gateway {
                 }
             }
             while let Ok(event) = event_receiver.try_recv() {
+                match &event {
+                    Event::Ready { guild_ids, .. } => {
+                        bot.partial_guilds = guild_ids.clone();
+                    }
+                    Event::GuildCreate(guild) => {
+                        if bot.partial_guilds.len() > 0 {
+                            if let Some(index) = bot
+                                .partial_guilds
+                                .iter()
+                                .position(|g| g.as_number::<u64>() == guild.id().as_number::<u64>())
+                            {
+                                bot.partial_guilds.remove(index);
+                                bot.guilds.push(guild.clone());
+                            }
+                        }
+                        continue;
+                    }
+                    Event::HeartBeatAcknowledge => {}
+                    Event::InvalidSession => {}
+                }
                 event_handler(event);
             }
         }

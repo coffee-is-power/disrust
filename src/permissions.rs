@@ -1,4 +1,4 @@
-#[derive(strum::FromRepr, Debug, PartialEq, Eq)]
+#[derive(strum::FromRepr, Debug, PartialEq, Eq, Clone)]
 #[repr(u8)]
 pub enum Permission {
     CreateInvite,
