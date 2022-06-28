@@ -141,9 +141,9 @@ impl Gateway {
                             {
                                 bot.partial_guilds.remove(index);
                                 bot.guilds.push(guild.clone());
+                                continue;
                             }
                         }
-                        continue;
                     }
                     Event::HeartBeatAcknowledge => {}
                     Event::InvalidSession => {}
