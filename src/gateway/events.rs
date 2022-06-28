@@ -1,15 +1,16 @@
 use std::hash::Hash;
 
-use crate::user::User;
+use crate::{user::User, snowflake::Snowflake, Guild};
 #[derive(Debug)]
 pub enum Event {
     Ready {
         api_version: u64,
         session_id: String,
         application_id: u64,
-        guild_ids: Vec<u64>,
+        guild_ids: Vec<Snowflake>,
         bot_user: User,
     },
+    GuildCreate(Guild),
     HeartBeatAcknowledge,
     InvalidSession,
 }

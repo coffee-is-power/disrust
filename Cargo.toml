@@ -15,3 +15,6 @@ serde = {version = "*", features = ["derive"]}
 tokio = { version = "*", features = ["full"] }
 # Allow formatting in const variables
 const_format = "*"
+strum_macros = "0.24"
+
+strum = { version = "0.24", features = ["derive"] }

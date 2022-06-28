@@ -1,4 +1,6 @@
 mod events;
+use crate::Guild;
+
 pub use self::events::{Command, Event};
 use const_format::formatcp;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
@@ -154,7 +156,9 @@ impl Gateway {
                         .await
                         .unwrap();
                 }
-                "GUILD_CREATE" => {}
+                "GUILD_CREATE" => {
+                    sender.send(Event::GuildCreate(Guild::from_json(packet["d"].as_object().unwrap()))).await.unwrap()
+                }
                 _ => todo!("Event {} not implemented yet!", typ),
             },
             Value::Null => {}
