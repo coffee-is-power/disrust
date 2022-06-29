@@ -1,6 +1,7 @@
 use std::time::Duration;
 
-use crate::{emoji::Emoji, role::Role, snowflake::Snowflake};
+use crate::{emoji::Emoji, getter, role::Role, snowflake::Snowflake, channel::{Channel, TextChannel}, Bot};
+use reqwest::blocking::Client;
 use serde_json::{Map, Value};
 use strum::FromRepr;
 
@@ -25,18 +26,6 @@ pub struct Guild {
     mfa_level: bool,
 }
 
-macro_rules! getter {
-    ($field:ident -> $typ:ty) => {
-        pub fn $field(&self) -> $typ {
-            self.$field.clone()
-        }
-    };
-    (&$field:ident -> $typ:ty) => {
-        pub fn $field<'a>(&'a self) -> &'a $typ {
-            &self.$field
-        }
-    };
-}
 impl Guild {
     getter!(id -> Snowflake);
     getter!(name -> String);
@@ -55,7 +44,25 @@ impl Guild {
     getter!(&emojis -> Vec<Emoji>);
     getter!(&features -> Vec<String>);
     getter!(mfa_level -> bool);
-
+    pub fn channels<'a>(&'a self, bot: &'a Bot) -> Vec<Channel> {
+        let res = bot.client.get("https://discord.com/api/v10/guilds/{guild.id}/channels").send().unwrap().text().unwrap();
+        let array = serde_json::from_str::<Vec<Map<String, Value>>>(&res).unwrap();
+        array.iter().map(|x| {
+            match x["type"].as_u64().unwrap(){
+                0 => Channel::GuildText(TextChannel::<'a>::from_json(x, &bot.client)),
+                1 => Channel::DM,
+                2 => Channel::GuildVoice,
+                3 => Channel::GroupDM,
+                4 => Channel::GuildCategory,
+                5 => Channel::GuildNews,
+                10 => Channel::GuildNewsThread,
+                11 => Channel::GuildPublicThread,
+                12 => Channel::GuildPrivateThread,
+                13 => Channel::GuildStageVoice,
+                _ => unimplemented!("{:#?}", x)
+            }
+        }).collect()
+    }
     pub(crate) fn from_json(json: &Map<String, Value>) -> Self {
         Self {
             afk_channel_id: if let Some(afk_channel_id) = json["afk_channel_id"].as_str() {
@@ -134,7 +141,7 @@ impl Guild {
                 true
             } else {
                 false
-            },
+            }
         }
     }
 }

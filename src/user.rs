@@ -1,5 +1,7 @@
 use serde::Deserialize;
 
+use crate::getter;
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct User {
     pub(crate) id: String,
@@ -14,18 +16,6 @@ pub struct User {
     pub(crate) email: Option<String>,
     pub(crate) flags: Option<u32>,
     pub(crate) premium_type: Option<PremiumType>,
-}
-macro_rules! getter {
-    ($field:ident -> $typ:ty) => {
-        pub fn $field(&self) -> $typ {
-            self.$field.clone()
-        }
-    };
-    ($getter_name:ident -> $field:ident -> $typ:ty) => {
-        pub fn $getter_name(&self) -> $typ {
-            self.$field.clone()
-        }
-    };
 }
 impl User {
     getter!(id -> String);

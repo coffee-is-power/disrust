@@ -1,6 +1,6 @@
 use serde_json::{Map, Value};
 
-use crate::{role::Role, snowflake::Snowflake, user::User};
+use crate::{getter, role::Role, snowflake::Snowflake, user::User};
 
 #[derive(Debug, Clone)]
 pub struct Emoji {
@@ -11,18 +11,6 @@ pub struct Emoji {
     creator: Option<User>,
     animated: bool,
     available: bool,
-}
-macro_rules! getter {
-    ($field:ident -> $typ:ty) => {
-        pub fn $field(&self) -> $typ {
-            self.$field.clone()
-        }
-    };
-    (&$field:ident -> $typ:ty) => {
-        pub fn $field<'a>(&'a self) -> &'a $typ {
-            &self.$field
-        }
-    };
 }
 impl Emoji {
     getter!(id -> Option<Snowflake>);

@@ -1,6 +1,6 @@
 use serde_json::{Map, Value};
 
-use crate::{permissions::Permission, snowflake::Snowflake};
+use crate::{getter, permissions::Permission, snowflake::Snowflake};
 
 #[derive(Debug, Clone)]
 pub struct Color(u8, u8, u8);
@@ -12,19 +12,6 @@ impl Color {
             ((hex & 0xFF0000) >> 16) as u8,
         )
     }
-}
-
-macro_rules! getter {
-    ($field:ident -> $typ:ty) => {
-        pub fn $field(&self) -> $typ {
-            self.$field.clone()
-        }
-    };
-    (&$field:ident -> $typ:ty) => {
-        pub fn $field<'a>(&'a self) -> &'a $typ {
-            &self.$field
-        }
-    };
 }
 #[derive(Debug, Clone)]
 pub struct Role {
