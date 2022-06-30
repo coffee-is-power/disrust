@@ -1,10 +1,10 @@
 mod events;
-use crate::{Bot, Guild, channel::message::Message as TextMessage, snowflake::Snowflake};
+use crate::{channel::message::Message as TextMessage, snowflake::Snowflake, Bot, Guild};
 
 pub use self::events::{Command, Event};
 use const_format::formatcp;
-use futures_util::{SinkExt, StreamExt, TryStreamExt, Future};
-use reqwest::{Url, Client};
+use futures_util::{Future, SinkExt, StreamExt, TryStreamExt};
+use reqwest::{Client, Url};
 use serde_json::{Map, Number, Value};
 use std::{env::consts::OS, sync::Arc, time::Duration};
 use tokio::{
@@ -42,7 +42,12 @@ impl Gateway {
         }
     }
 
-    pub async fn start_event_loop<F: Future>(mut self, bot: &mut Bot, event_handler: fn(Event) -> F, client: Client) -> ! {
+    pub async fn start_event_loop<F: Future>(
+        mut self,
+        bot: &mut Bot,
+        event_handler: fn(Event) -> F,
+        client: Client,
+    ) -> ! {
         let (event_sender, mut event_receiver) = channel::<Event>(5);
         let (sender, mut receiver) = channel::<Command>(5);
         let sender2 = sender.clone();
@@ -131,7 +136,11 @@ impl Gateway {
             }
             while let Ok(event) = event_receiver.try_recv() {
                 match &event {
-                    Event::Ready { guild_ids, bot_user, .. } => {
+                    Event::Ready {
+                        guild_ids,
+                        bot_user,
+                        ..
+                    } => {
                         bot.partial_guilds = guild_ids.clone();
                         bot_id = bot_user.id.parse().unwrap();
                     }
@@ -149,7 +158,7 @@ impl Gateway {
                         }
                     }
                     Event::MessageCreate(msg) => {
-                        if msg.author().id().parse::<u64>().unwrap() == bot_id{
+                        if msg.author().id().parse::<u64>().unwrap() == bot_id {
                             continue;
                         }
                     }
@@ -186,13 +195,29 @@ impl Gateway {
                 "GUILD_CREATE" => sender
                     .send(Event::GuildCreate(Guild::from_json(
                         packet["d"].as_object().unwrap(),
-                        client.clone()
+                        client.clone(),
                     )))
                     .await
                     .unwrap(),
-                "MESSAGE_CREATE" => sender.send(Event::MessageCreate(
-                    TextMessage::from_json(packet["d"].as_object().unwrap(), client.clone())
-                )).await.unwrap(),
+                "MESSAGE_CREATE" => sender
+                    .send(Event::MessageCreate(TextMessage::from_json(
+                        packet["d"].as_object().unwrap(),
+                        client.clone(),
+                    )))
+                    .await
+                    .unwrap(),
+                "MESSAGE_DELETE" => sender
+                    .send(Event::DeleteMessage {
+                        id: packet["d"]["id"].as_str().unwrap().parse().unwrap(),
+                        channel: Bot::fetch_channel_with_client(
+                            client.clone(),
+                            packet["d"]["channel_id"].as_str().unwrap().parse().unwrap(),
+                        )
+                        .await
+                        .unwrap(),
+                    })
+                    .await
+                    .unwrap(),
                 _ => todo!("Event {} not implemented yet!", typ),
             },
             Value::Null => {}

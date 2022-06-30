@@ -1,6 +1,11 @@
 use std::hash::Hash;
 
-use crate::{snowflake::Snowflake, user::User, Guild, channel::message::Message};
+use crate::{
+    channel::{message::Message, Channel},
+    snowflake::Snowflake,
+    user::User,
+    Guild,
+};
 #[derive(Debug)]
 pub enum Event {
     /// This event is sent when the bot successfully logs in
@@ -21,6 +26,10 @@ pub enum Event {
     MessageCreate(Message),
     HeartBeatAcknowledge,
     InvalidSession,
+    DeleteMessage {
+        id: Snowflake,
+        channel: Channel,
+    },
 }
 #[derive(Debug)]
 pub enum Command {

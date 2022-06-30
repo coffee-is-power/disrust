@@ -1,6 +1,13 @@
 use std::time::Duration;
 
-use crate::{emoji::Emoji, getter, role::Role, snowflake::Snowflake, channel::{Channel, TextChannel}, Bot};
+use crate::{
+    channel::{Channel, TextChannel},
+    emoji::Emoji,
+    getter,
+    role::Role,
+    snowflake::Snowflake,
+    Bot,
+};
 use reqwest::Client;
 use serde_json::{Map, Value};
 use strum::FromRepr;
@@ -24,7 +31,7 @@ pub struct Guild {
     emojis: Vec<Emoji>,
     features: Vec<String>,
     mfa_level: bool,
-    client: Client
+    client: Client,
 }
 
 impl Guild {
@@ -46,23 +53,20 @@ impl Guild {
     getter!(&features -> Vec<String>);
     getter!(mfa_level -> bool);
     pub async fn channels<'a>(&'a self) -> Vec<Channel> {
-        let res = self.client.get("https://discord.com/api/v10/guilds/{guild.id}/channels").send().await.unwrap().text().await.unwrap();
+        let res = self
+            .client
+            .get("https://discord.com/api/v10/guilds/{guild.id}/channels")
+            .send()
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap();
         let array = serde_json::from_str::<Vec<Map<String, Value>>>(&res).unwrap();
-        array.iter().map(|x| {
-            match x["type"].as_u64().unwrap(){
-                0 => Channel::GuildText(TextChannel::from_json(x, self.client.clone())),
-                1 => Channel::DM,
-                2 => Channel::GuildVoice,
-                3 => Channel::GroupDM,
-                4 => Channel::GuildCategory,
-                5 => Channel::GuildNews,
-                10 => Channel::GuildNewsThread,
-                11 => Channel::GuildPublicThread,
-                12 => Channel::GuildPrivateThread,
-                13 => Channel::GuildStageVoice,
-                _ => unimplemented!("{:#?}", x)
-            }
-        }).collect()
+        array
+            .iter()
+            .map(|x| Channel::from_json(x, self.client.clone()))
+            .collect()
     }
     pub(crate) fn from_json(json: &Map<String, Value>, client: Client) -> Self {
         Self {
@@ -143,7 +147,7 @@ impl Guild {
             } else {
                 false
             },
-            client: client.clone()
+            client: client.clone(),
         }
     }
 }
