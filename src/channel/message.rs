@@ -21,15 +21,31 @@ impl Message {
     getter!(&mention_roles -> Vec<Role>);
     getter!(&mentions -> Vec<User>);
     getter!(&author -> User);
+    pub async fn delete(self) {
+        let _ = self
+            .client
+            .delete(format!(
+                "https://discord.com/api/v10/channels/{}/messages/{}",
+                self.channel_id(),
+                self.id()
+            ))
+            .send()
+            .await;
+    }
     pub async fn channel(&self) -> TextChannel {
         TextChannel::from_json(
             &serde_json::from_str::<Map<_, _>>(
                 &self
                     .client
-                    .get(format!("https://discord.com/api/v10/channels/{}", self.channel_id()))
-                    .send().await
+                    .get(format!(
+                        "https://discord.com/api/v10/channels/{}",
+                        self.channel_id()
+                    ))
+                    .send()
+                    .await
                     .unwrap()
-                    .text().await
+                    .text()
+                    .await
                     .unwrap(),
             )
             .unwrap(),
