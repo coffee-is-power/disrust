@@ -1,12 +1,11 @@
 use std::time::Duration;
 
 use crate::{
-    channel::{Channel, TextChannel},
+    channel::{Channel},
     emoji::Emoji,
     getter,
     role::Role,
     snowflake::Snowflake,
-    Bot,
 };
 use reqwest::Client;
 use serde_json::{Map, Value};

@@ -1,5 +1,5 @@
 mod events;
-use crate::{channel::message::Message as TextMessage, snowflake::Snowflake, Bot, Guild};
+use crate::{channel::message::Message as TextMessage, Bot, Guild};
 
 pub use self::events::{Command, Event};
 use const_format::formatcp;

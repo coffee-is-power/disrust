@@ -1,8 +1,8 @@
+pub use self::text_channel::TextChannel;
+use crate::getter;
+use crate::snowflake::Snowflake;
 use reqwest::Client;
 use serde_json::{Map, Value};
-
-pub use self::text_channel::TextChannel;
-use crate::snowflake::Snowflake;
 pub mod message;
 pub mod text_channel;
 #[derive(Debug)]
@@ -12,6 +12,9 @@ pub struct ChannelCommon {
     name: String,
 }
 impl ChannelCommon {
+    getter!(id -> Snowflake);
+    getter!(position -> u64);
+    getter!(name -> String);
     pub(crate) fn from_json(json: &Map<String, Value>) -> Self {
         ChannelCommon {
             id: json["id"].as_str().unwrap().parse().unwrap(),
