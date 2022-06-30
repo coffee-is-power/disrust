@@ -9,16 +9,16 @@ repository = "https://github.com/coffee-is-power/disrust"
 keywords = ["discord", "rust", "bots"]
 [dependencies]
 # This is for communicating with the discord rest api
-reqwest = {version = "0.11.*", features = ["blocking", "native-tls"]}
+reqwest = {version = "0.11.11", features = ["blocking", "native-tls"]}
 # This is for connecting to the discord gateway
 # Discord will send events through the gateway
-tokio-tungstenite = {version = "*", features = ["native-tls"]}
-futures-util = "*"
-serde_json = "*"
-serde = {version = "*", features = ["derive"]}
-tokio = { version = "*", features = ["full"] }
+tokio-tungstenite = {version = "0.17.1", features = ["native-tls"]}
+futures-util = "0.3.21"
+serde_json = "1.0.82"
+serde = {version = "1.0.137", features = ["derive"]}
+tokio = { version = "1.19.2", features = ["full"] }
 # Allow formatting in const variables
-const_format = "*"
+const_format = "0.2.25"
 strum_macros = "0.24"
 
 strum = { version = "0.24", features = ["derive"] }
