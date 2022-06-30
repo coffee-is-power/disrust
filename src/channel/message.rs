@@ -1,42 +1,42 @@
-use reqwest::blocking::Client;
+use reqwest::Client;
 use serde_json::{Map, Value};
 
 use crate::{getter, role::Role, snowflake::Snowflake, user::User};
 
 use super::TextChannel;
-
-pub struct Message<'a> {
+#[derive(Debug)]
+pub struct Message {
     id: Snowflake,
     content: String,
     author: User,
     channel_id: Snowflake,
     mentions: Vec<User>,
-    mentions_roles: Vec<Role>,
-    client: &'a Client,
+    mention_roles: Vec<Role>,
+    client: Client,
 }
-impl<'b> Message<'b> {
+impl Message {
     getter!(id -> Snowflake);
     getter!(channel_id -> Snowflake);
     getter!(content -> String);
-    getter!(&mentions_roles -> Vec<Role>);
+    getter!(&mention_roles -> Vec<Role>);
     getter!(&mentions -> Vec<User>);
     getter!(&author -> User);
-    pub fn channel(&self) -> TextChannel {
+    pub async fn channel(&self) -> TextChannel {
         TextChannel::from_json(
             &serde_json::from_str::<Map<_, _>>(
                 &self
                     .client
-                    .get(format!("https://discord.com/api/v10/channels/{}", self.id()))
-                    .send()
+                    .get(format!("https://discord.com/api/v10/channels/{}", self.channel_id()))
+                    .send().await
                     .unwrap()
-                    .text()
+                    .text().await
                     .unwrap(),
             )
             .unwrap(),
-            self.client,
+            self.client.clone(),
         )
     }
-    pub(crate) fn from_json(json: Map<String, Value>, client: &'b Client) -> Self {
+    pub(crate) fn from_json(json: &Map<String, Value>, client: Client) -> Self {
         Self {
             id: json["id"].as_str().unwrap().parse().unwrap(),
             channel_id: json["channel_id"].as_str().unwrap().parse().unwrap(),
@@ -48,7 +48,7 @@ impl<'b> Message<'b> {
                 .iter()
                 .map(|u| serde_json::from_value(u.clone()).unwrap())
                 .collect(),
-            mentions_roles: json["mentions_roles"]
+            mention_roles: json["mention_roles"]
                 .as_array()
                 .unwrap()
                 .iter()

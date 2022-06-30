@@ -1,10 +1,10 @@
 mod events;
-use crate::{Bot, Guild};
+use crate::{Bot, Guild, channel::message::Message as TextMessage, snowflake::Snowflake};
 
 pub use self::events::{Command, Event};
 use const_format::formatcp;
-use futures_util::{SinkExt, StreamExt, TryStreamExt};
-use reqwest::Url;
+use futures_util::{SinkExt, StreamExt, TryStreamExt, Future};
+use reqwest::{Url, Client};
 use serde_json::{Map, Number, Value};
 use std::{env::consts::OS, sync::Arc, time::Duration};
 use tokio::{
@@ -42,7 +42,7 @@ impl Gateway {
         }
     }
 
-    pub async fn start_event_loop(mut self, bot: &mut Bot, event_handler: fn(Event)) -> ! {
+    pub async fn start_event_loop<F: Future>(mut self, bot: &mut Bot, event_handler: fn(Event) -> F, client: Client) -> ! {
         let (event_sender, mut event_receiver) = channel::<Event>(5);
         let (sender, mut receiver) = channel::<Command>(5);
         let sender2 = sender.clone();
@@ -61,6 +61,7 @@ impl Gateway {
         let (mut writer, mut reader) = self.socket.split();
 
         tokio::spawn(async move {
+            let client = client;
             loop {
                 let next = reader
                     .try_next()
@@ -75,10 +76,11 @@ impl Gateway {
                     if let Some(seq) = seq {
                         *s_mutex2.lock().await = seq;
                     }
-                    Self::handle_packet(event_sender.clone(), packet).await;
+                    Self::handle_packet(event_sender.clone(), packet, client.clone()).await;
                 }
             }
         });
+        let mut bot_id = 0u64;
         loop {
             if let Ok(cmd) = receiver.try_recv() {
                 self.command_queue.push(cmd);
@@ -129,8 +131,9 @@ impl Gateway {
             }
             while let Ok(event) = event_receiver.try_recv() {
                 match &event {
-                    Event::Ready { guild_ids, .. } => {
+                    Event::Ready { guild_ids, bot_user, .. } => {
                         bot.partial_guilds = guild_ids.clone();
+                        bot_id = bot_user.id.parse().unwrap();
                     }
                     Event::GuildCreate(guild) => {
                         if bot.partial_guilds.len() > 0 {
@@ -145,14 +148,18 @@ impl Gateway {
                             }
                         }
                     }
-                    Event::HeartBeatAcknowledge => {}
-                    Event::InvalidSession => {}
+                    Event::MessageCreate(msg) => {
+                        if msg.author().id().parse::<u64>().unwrap() == bot_id{
+                            continue;
+                        }
+                    }
+                    _ => {}
                 }
-                event_handler(event);
+                event_handler(event).await;
             }
         }
     }
-    async fn handle_packet(sender: Sender<Event>, packet: Map<String, Value>) {
+    async fn handle_packet<'a>(sender: Sender<Event>, packet: Map<String, Value>, client: Client) {
         match &packet["t"] {
             Value::String(typ) => match typ.as_str() {
                 "READY" => {
@@ -179,9 +186,13 @@ impl Gateway {
                 "GUILD_CREATE" => sender
                     .send(Event::GuildCreate(Guild::from_json(
                         packet["d"].as_object().unwrap(),
+                        client.clone()
                     )))
                     .await
                     .unwrap(),
+                "MESSAGE_CREATE" => sender.send(Event::MessageCreate(
+                    TextMessage::from_json(packet["d"].as_object().unwrap(), client.clone())
+                )).await.unwrap(),
                 _ => todo!("Event {} not implemented yet!", typ),
             },
             Value::Null => {}

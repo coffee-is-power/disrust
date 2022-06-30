@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use crate::{snowflake::Snowflake, user::User, Guild};
+use crate::{snowflake::Snowflake, user::User, Guild, channel::message::Message};
 #[derive(Debug)]
 pub enum Event {
     /// This event is sent when the bot successfully logs in
@@ -18,6 +18,7 @@ pub enum Event {
     ///
     /// See also: https://discord.com/developers/docs/topics/gateway#guilds
     GuildCreate(Guild),
+    MessageCreate(Message),
     HeartBeatAcknowledge,
     InvalidSession,
 }

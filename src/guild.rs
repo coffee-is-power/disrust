@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::{emoji::Emoji, getter, role::Role, snowflake::Snowflake, channel::{Channel, TextChannel}, Bot};
-use reqwest::blocking::Client;
+use reqwest::Client;
 use serde_json::{Map, Value};
 use strum::FromRepr;
 
@@ -24,6 +24,7 @@ pub struct Guild {
     emojis: Vec<Emoji>,
     features: Vec<String>,
     mfa_level: bool,
+    client: Client
 }
 
 impl Guild {
@@ -44,12 +45,12 @@ impl Guild {
     getter!(&emojis -> Vec<Emoji>);
     getter!(&features -> Vec<String>);
     getter!(mfa_level -> bool);
-    pub fn channels<'a>(&'a self, bot: &'a Bot) -> Vec<Channel> {
-        let res = bot.client.get("https://discord.com/api/v10/guilds/{guild.id}/channels").send().unwrap().text().unwrap();
+    pub async fn channels<'a>(&'a self) -> Vec<Channel> {
+        let res = self.client.get("https://discord.com/api/v10/guilds/{guild.id}/channels").send().await.unwrap().text().await.unwrap();
         let array = serde_json::from_str::<Vec<Map<String, Value>>>(&res).unwrap();
         array.iter().map(|x| {
             match x["type"].as_u64().unwrap(){
-                0 => Channel::GuildText(TextChannel::<'a>::from_json(x, &bot.client)),
+                0 => Channel::GuildText(TextChannel::from_json(x, self.client.clone())),
                 1 => Channel::DM,
                 2 => Channel::GuildVoice,
                 3 => Channel::GroupDM,
@@ -63,7 +64,7 @@ impl Guild {
             }
         }).collect()
     }
-    pub(crate) fn from_json(json: &Map<String, Value>) -> Self {
+    pub(crate) fn from_json(json: &Map<String, Value>, client: Client) -> Self {
         Self {
             afk_channel_id: if let Some(afk_channel_id) = json["afk_channel_id"].as_str() {
                 Some(afk_channel_id.parse().unwrap())
@@ -141,7 +142,8 @@ impl Guild {
                 true
             } else {
                 false
-            }
+            },
+            client: client.clone()
         }
     }
 }

@@ -11,13 +11,18 @@ macro_rules! getter {
         }
     };
 
+    ($getter_name:ident -> unwrap_or $field:ident $fallback:expr => $typ:ty) => {
+        pub fn $getter_name(&self) -> $typ {
+            self.$field.unwrap_or($fallback).clone()
+        }
+    };
     ($getter_name:ident -> $field:ident -> $typ:ty) => {
         pub fn $getter_name(&self) -> $typ {
             self.$field.clone()
         }
     };
 
-    ($getter_name:ident -> &$field:ident -> $typ:ty) => {
+    ($getter_name:ident -> &$field:ident => $typ:ty) => {
         pub fn $getter_name<'a>(&'a self) -> &'a $typ {
             &self.$field
         }

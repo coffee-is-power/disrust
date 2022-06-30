@@ -18,8 +18,8 @@ impl ChannelCommon {
         }
     }
 }
-pub enum Channel<'a> {
-    GuildText(TextChannel<'a>),
+pub enum Channel {
+    GuildText(TextChannel),
     DM,
     GuildVoice,
     GroupDM,
