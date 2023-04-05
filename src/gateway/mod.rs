@@ -42,7 +42,7 @@ impl Gateway {
         }
     }
 
-    pub async fn start_event_loop<F: Future>(mut self, bot: &mut Bot, event_handler: fn(Event) -> F, client: Client) -> ! {
+    pub async fn start_event_loop<F: Future>(mut self, bot: &mut Bot, event_handler: impl Fn(Event) -> F, client: Client) -> ! {
         let (event_sender, mut event_receiver) = channel::<Event>(5);
         let (sender, mut receiver) = channel::<Command>(5);
         let sender2 = sender.clone();
