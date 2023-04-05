@@ -34,7 +34,7 @@ impl Bot {
     }
     
     /// Logs into a bot account using a token and starts an event loop to handle all events coming from the discord gateway
-    pub async fn login<F: Future>(&mut self, intents: Vec<Intent>, eh: fn(Event) -> F) -> ! {
+    pub async fn login<F: Future>(&mut self, intents: Vec<Intent>, eh: impl Fn(Event) -> F) -> ! {
         let mut gateway = Gateway::connect().await;
         gateway.authenticate(&self.token, intents);
         gateway.start_event_loop(self, eh, create_client(&self.token)).await
